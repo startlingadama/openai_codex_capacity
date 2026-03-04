@@ -1,0 +1,10 @@
+# Python caches
+__pycache__/
+*.pyc
+
+# Local databases / artifacts
+backend/data/*.sqlite
+backend/data/app.sqlite
+
+# Virtual env
+.venv/
