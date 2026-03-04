@@ -42,6 +42,18 @@ function App() {
       },
     ]);
   }
+const API_URL = 'http://localhost:8000/api/chat';
+
+function App() {
+  const [messages, setMessages] = useState([
+    {
+      role: 'assistant',
+      content:
+        "Bonjour 👋 Je suis l'agent CDG. Dites-moi votre besoin support (accès, incident, ticket).",
+    },
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function sendMessage(event) {
     event.preventDefault();
@@ -49,6 +61,9 @@ function App() {
     if (!text || loading || !token) return;
 
     setMessages((prev) => [...prev, { role: 'user', content: text, sources: [] }]);
+    if (!text || loading) return;
+
+    setMessages((prev) => [...prev, { role: 'user', content: text }]);
     setInput('');
     setLoading(true);
 
@@ -60,6 +75,10 @@ function App() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ message: text, conversation_id: conversationId }),
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
       });
 
       if (!response.ok) throw new Error(`Erreur API: ${response.status}`);
@@ -74,6 +93,7 @@ function App() {
           sources: data.sources || [],
         },
       ]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -81,6 +101,8 @@ function App() {
           role: 'assistant',
           content: "Erreur backend. Vérifiez l'API FastAPI sur le port 8000.",
           sources: [],
+          content:
+            "Je n'arrive pas à joindre le backend. Vérifiez que l'API FastAPI tourne sur le port 8000.",
         },
       ]);
       console.error(error);
@@ -152,6 +174,29 @@ function App() {
         </aside>
       )}
     </>
+    <main className="layout">
+      <h1>Support conversationnel CDG</h1>
+      <section className="chatbox" aria-live="polite">
+        {messages.map((message, index) => (
+          <article key={index} className={`message ${message.role}`}>
+            <strong>{message.role === 'assistant' ? 'Agent CDG' : 'Vous'} :</strong>{' '}
+            <span>{message.content}</span>
+          </article>
+        ))}
+      </section>
+
+      <form onSubmit={sendMessage} className="composer">
+        <input
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+          placeholder="Ex: Je n'arrive pas à me connecter"
+          disabled={loading}
+        />
+        <button type="submit" disabled={loading || !input.trim()}>
+          {loading ? 'Envoi...' : 'Envoyer'}
+        </button>
+      </form>
+    </main>
   );
 }
 

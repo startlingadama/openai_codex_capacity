@@ -12,6 +12,7 @@ from urllib.request import Request, urlopen
 
 from backend.app.services.rag_service import upsert_embeddings_for_all_chunks
 from backend.rag.rag_store import Chunk, init_db, record_ingestion, replace_chunks
+from backend.rag.rag_store import Chunk, init_db, replace_chunks
 
 
 class PageParser(HTMLParser):
