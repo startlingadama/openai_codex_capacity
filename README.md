@@ -40,6 +40,13 @@ La base `app.sqlite` contient :
 - `sessions` : tokens Bearer avec date d'expiration.
 - `conversations` : historique de conversations par utilisateur.
 - `messages` : messages user/assistant liés à une conversation.
+- **Backend Python (FastAPI)** pour exposer une API de chat.
+- **Frontend React** pour une interface de conversation simple.
+
+## Structure
+
+- `backend/` API FastAPI
+- `frontend/` app React
 
 ## Démarrage rapide
 
@@ -62,6 +69,10 @@ python3 -m backend.rag.build_rag_db --start-url https://www.cdgcapitalgestion.ma
 ```
 
 ### 3) Frontend
+uvicorn app.main:app --reload --port 8000
+```
+
+### 2) Frontend
 
 ```bash
 cd frontend
@@ -113,3 +124,19 @@ curl -X POST http://localhost:8000/api/chat \
 - ✅ Ajouter authentification agents/utilisateurs : endpoints register/login + session token.
 - ✅ Historisation des conversations : stockage SQLite des conversations et messages.
 - ✅ Routage intelligent vers catégories de support : catégorisation `authentication`, `incident`, `product_info`, `general`.
+Le frontend appelle `http://localhost:8000/api/chat`.
+
+## Exemple requête API
+
+```bash
+curl -X POST http://localhost:8000/api/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"Bonjour, j\'ai un souci de mot de passe"}'
+```
+
+## Pistes d'évolution
+
+- Brancher un LLM (OpenAI, Azure OpenAI, etc.)
+- Ajouter authentification agents/utilisateurs
+- Historisation des conversations
+- Routage intelligent vers catégories de support
