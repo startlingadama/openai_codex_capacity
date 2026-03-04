@@ -3,12 +3,15 @@ from __future__ import annotations
 import argparse
 import json
 import ssl
+from datetime import datetime, timezone
 from collections import deque
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 
+from backend.app.services.rag_service import upsert_embeddings_for_all_chunks
+from backend.rag.rag_store import Chunk, init_db, record_ingestion, replace_chunks
 from backend.rag.rag_store import Chunk, init_db, replace_chunks
 
 
@@ -147,6 +150,9 @@ def main() -> None:
     db_path = Path(args.db_path)
     init_db(db_path)
     total = replace_chunks(db_path, chunks)
+    version = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    record_ingestion(db_path, version=version, pages=pages, chunks_count=total)
+    embedded = upsert_embeddings_for_all_chunks(db_path)
 
     export_path = Path(args.export_json)
     export_path.parent.mkdir(parents=True, exist_ok=True)
@@ -161,6 +167,7 @@ def main() -> None:
     print(f"Pages scrapées: {len(pages)}")
     print(f"Chunks indexés: {total}")
     print(f"DB: {db_path}")
+    print(f"Embeddings calculés: {embedded}")
     if errors:
         print("Erreurs scraping (3 max):")
         for err in errors[:3]:
